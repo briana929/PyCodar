@@ -333,27 +333,34 @@ def create_file_table(metrics):
 
 def print_stats(metrics):
     """Print formatted statistics from the analysis."""
-
     # Basic Metrics
     console.print("\n[bold cyan]📊 Basic Metrics[/bold cyan]")
     console.print(create_metrics_table(metrics))
-    
-    # File Structure
+
+def print_structure(metrics):
+    """Print file structure tree."""
     console.print("\n[bold cyan]🌳 File Structure[/bold cyan]")
     console.print(create_structure_tree(metrics))
-    
-    # File Distribution
+
+def print_files(metrics):
+    """Print file distribution table."""
     console.print("\n[bold cyan]📁 File Distribution[/bold cyan]")
     console.print(create_file_table(metrics))
-    
-    # Code Connections
+
+def print_calls(metrics):
+    """Print code connections information."""
     if 'code_connections' in metrics:
         console.print("\n[bold cyan]🔗 Code Connections[/bold cyan]")
         console.print(create_code_connections_tree(metrics['code_connections']))
         
         console.print("\n[bold cyan]📊 Most Called Elements[/bold cyan]")
         console.print(create_code_connections_table(metrics['code_connections']))
-        
+    else:
+        console.print("\n[bold red]Error: Code connections analysis not available[/bold red]")
+
+def print_dead_code(metrics):
+    """Print potentially unused code."""
+    if 'code_connections' in metrics:
         # Only show dead code if there is any
         dead_code_count = (
             len(metrics['code_connections']['dead_code']['functions']) +
@@ -364,77 +371,120 @@ def print_stats(metrics):
         if dead_code_count > 0:
             console.print("\n[bold red]💀 Potentially Unused Code[/bold red]")
             console.print(create_dead_code_table(metrics['code_connections']))
+        else:
+            console.print("\n[bold green]✓ No potentially unused code found[/bold green]")
+    else:
+        console.print("\n[bold red]Error: Dead code analysis not available[/bold red]")
+
+def process_directory(args):
+    """Process a directory and return metrics."""
+    base_path = Path(args.path)
+    if not base_path.exists():
+        console.print(f"[red]Error: Path '{base_path}' does not exist[/red]", file=sys.stderr)
+        sys.exit(1)
     
-    console.print("\n")
+    # Get ignore patterns
+    ignore_patterns = get_ignore_patterns(base_path)
+    
+    # Enhance the metrics with code analysis
+    metrics = analyze_directory(str(base_path))
+    
+    # Add code metrics
+    total_code_lines = 0
+    total_comment_lines = 0
+    total_empty_lines = 0
+    total_directories = 0
+    filtered_file_structure = []
+    
+    for folder in metrics['file_structure']:
+        folder_path = Path(folder['path']) if folder['path'] else Path('.')
+        if should_ignore(folder_path, ignore_patterns):
+            continue
+            
+        filtered_files = []
+        for file in folder['files']:
+            file_path = folder_path / file['name']
+            if should_ignore(file_path, ignore_patterns):
+                continue
+                
+            if file['name'].endswith('.py'):
+                code_lines, comment_lines, empty_lines = count_code_metrics(str(file_path))
+                file['code_lines'] = code_lines
+                file['comment_lines'] = comment_lines
+                file['empty_lines'] = empty_lines
+                total_code_lines += code_lines
+                total_comment_lines += comment_lines
+                total_empty_lines += empty_lines
+            else:
+                file['code_lines'] = 0
+                file['comment_lines'] = 0
+                file['empty_lines'] = 0
+            
+            filtered_files.append(file)
+        
+        if filtered_files:
+            folder['files'] = filtered_files
+            filtered_file_structure.append(folder)
+            total_directories += 1
+    
+    metrics['file_structure'] = filtered_file_structure
+    metrics['total_code_lines'] = total_code_lines
+    metrics['total_comment_lines'] = total_comment_lines
+    metrics['total_empty_lines'] = total_empty_lines
+    metrics['total_directories'] = total_directories
+    metrics['total_files'] = sum(len(folder['files']) for folder in filtered_file_structure)
+    
+    return metrics
 
 def main():
-    parser = argparse.ArgumentParser(description='Code Architecture System - Code Analysis Tool')
+    parser = argparse.ArgumentParser(description='PyCodar - A Radar for Your Code')
     subparsers = parser.add_subparsers(dest='command', help='Available commands')
     
-    # Stats command
-    stats_parser = subparsers.add_parser('stats', help='Show code metrics and statistics')
-    stats_parser.add_argument('--path', default='.', help='Path to analyze (default: current directory)')
+    # Common path argument for all commands
+    path_help = 'Path to analyze (default: current directory)'
+    
+    # Stats command - Shows basic metrics
+    stats_parser = subparsers.add_parser('stats', help='Show basic code metrics and statistics')
+    stats_parser.add_argument('--path', default='.', help=path_help)
+    
+    # Structure command - Shows file structure tree
+    strct_parser = subparsers.add_parser('strct', help='Display file structure with functions, classes, and methods')
+    strct_parser.add_argument('--path', default='.', help=path_help)
+    
+    # Files command - Shows file distribution table
+    files_parser = subparsers.add_parser('files', help='Show table of files with line counts')
+    files_parser.add_argument('--path', default='.', help=path_help)
+    
+    # Calls command - Shows code connections information
+    calls_parser = subparsers.add_parser('calls', help='Count how often code elements are called')
+    calls_parser.add_argument('--path', default='.', help=path_help)
+    
+    # Dead code command - Shows potentially unused code
+    dead_parser = subparsers.add_parser('dead', help='Find potentially unused code')
+    dead_parser.add_argument('--path', default='.', help=path_help)
     
     args = parser.parse_args()
     
-    if args.command == 'stats':
-        base_path = Path(args.path)
-        if not base_path.exists():
-            console.print(f"[red]Error: Path '{base_path}' does not exist[/red]", file=sys.stderr)
-            sys.exit(1)
+    if args.command in ('stats', 'strct', 'files', 'calls', 'dead'):
+        # Process directory and get metrics
+        metrics = process_directory(args)
         
-        # Get ignore patterns
-        ignore_patterns = get_ignore_patterns(base_path)
-        
-        # Enhance the metrics with code analysis
-        metrics = analyze_directory(str(base_path))
-        
-        # Add code metrics
-        total_code_lines = 0
-        total_comment_lines = 0
-        total_empty_lines = 0
-        total_directories = 0
-        filtered_file_structure = []
-        
-        for folder in metrics['file_structure']:
-            folder_path = Path(folder['path']) if folder['path'] else Path('.')
-            if should_ignore(folder_path, ignore_patterns):
-                continue
-                
-            filtered_files = []
-            for file in folder['files']:
-                file_path = folder_path / file['name']
-                if should_ignore(file_path, ignore_patterns):
-                    continue
-                    
-                if file['name'].endswith('.py'):
-                    code_lines, comment_lines, empty_lines = count_code_metrics(str(file_path))
-                    file['code_lines'] = code_lines
-                    file['comment_lines'] = comment_lines
-                    file['empty_lines'] = empty_lines
-                    total_code_lines += code_lines
-                    total_comment_lines += comment_lines
-                    total_empty_lines += empty_lines
-                else:
-                    file['code_lines'] = 0
-                    file['comment_lines'] = 0
-                    file['empty_lines'] = 0
-                
-                filtered_files.append(file)
-            
-            if filtered_files:
-                folder['files'] = filtered_files
-                filtered_file_structure.append(folder)
-                total_directories += 1
-        
-        metrics['file_structure'] = filtered_file_structure
-        metrics['total_code_lines'] = total_code_lines
-        metrics['total_comment_lines'] = total_comment_lines
-        metrics['total_empty_lines'] = total_empty_lines
-        metrics['total_directories'] = total_directories
-        metrics['total_files'] = sum(len(folder['files']) for folder in filtered_file_structure)
-        
-        print_stats(metrics)
+        # Display requested information based on command
+        if args.command == 'stats':
+            print_stats(metrics)
+            console.print("\n")
+        elif args.command == 'strct':
+            print_structure(metrics)
+            console.print("\n")
+        elif args.command == 'files':
+            print_files(metrics)
+            console.print("\n")
+        elif args.command == 'calls':
+            print_calls(metrics)
+            console.print("\n")
+        elif args.command == 'dead':
+            print_dead_code(metrics)
+            console.print("\n")
     else:
         parser.print_help()
 
