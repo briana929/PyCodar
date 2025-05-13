@@ -1,7 +1,6 @@
 import os
 import ast
-from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, Tuple
 
 def count_functions_and_classes(file_path: str) -> Tuple[int, int]:
     """Count the number of functions and classes in a Python file."""

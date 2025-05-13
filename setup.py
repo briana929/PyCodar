@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="codeas",
+    name="codar",
     version="0.1.0",
     packages=find_packages(),
     install_requires=[
@@ -9,15 +9,15 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'codeas=cli:main',
+            'codar=cli:main',
         ],
     },
-    author="Your Name",
-    author_email="your.email@example.com",
-    description="Code Architecture System - A Git-like tool for auditing and understanding your codebase",
+    author="Quentin Wach",
+    author_email="quentin.wach@gmail.com",
+    description="Code Architecture System - A simple tool for auditing and understanding your codebase",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/codeas",
+    url="https://github.com/QuentinWach/codar",
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

@@ -15,6 +15,14 @@ import os
 
 console = Console()
 
+class TestClass:
+    def __init__(self):
+        self.name = "Test"
+
+    def test_method(self):
+        print("Test")
+
+
 def extract_code_structure(file_path: str) -> dict:
     """Extract functions, classes, and methods from a Python file."""
     try:
@@ -63,14 +71,19 @@ def extract_code_structure(file_path: str) -> dict:
 
 def create_structure_tree(metrics):
     """Create a rich tree showing file structure with code elements."""
-    tree = Tree("📁 Project Structure", style="bold blue")
+    # Start with root node
+    tree = Tree("📁 Root", style="bold blue")
     
     # Sort folders and files for consistent display
     sorted_folders = sorted(metrics['file_structure'], key=lambda x: x['path'] or '')
     
     for folder in sorted_folders:
         path = folder['path'] or 'Root'
-        folder_tree = tree.add(f"📁 {path}", style="cyan")
+        if path == 'Root':
+            # Add files directly to root if they're in the root directory
+            folder_tree = tree
+        else:
+            folder_tree = tree.add(f"📁 {path}", style="cyan")
         
         # Sort files for consistent display
         sorted_files = sorted(folder['files'], key=lambda x: x['name'])
@@ -230,14 +243,7 @@ def create_file_table(metrics):
 
 def print_stats(metrics):
     """Print formatted statistics from the analysis."""
-    console.print("\n")
-    
-    # Title
-    console.print(Panel.fit(
-        "[bold blue]Code Statistics[/bold blue]",
-        border_style="blue"
-    ))
-    
+
     # Basic Metrics
     console.print("\n[bold cyan]📊 Basic Metrics[/bold cyan]")
     console.print(create_metrics_table(metrics))
