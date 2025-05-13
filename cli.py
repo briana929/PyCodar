@@ -27,9 +27,16 @@ def extract_code_structure(file_path: str) -> dict:
             'classes': []
         }
         
+        # First pass: set parent relationships
+        for node in ast.walk(tree):
+            for child in ast.iter_child_nodes(node):
+                child.parent = node
+        
+        # Second pass: collect structure
         for node in ast.walk(tree):
             if isinstance(node, ast.FunctionDef):
-                if not isinstance(node.parent, ast.ClassDef):  # Only top-level functions
+                if not hasattr(node, 'parent') or not isinstance(node.parent, ast.ClassDef):
+                    # Top-level function
                     structure['functions'].append({
                         'name': node.name,
                         'lineno': node.lineno
@@ -40,6 +47,7 @@ def extract_code_structure(file_path: str) -> dict:
                     'lineno': node.lineno,
                     'methods': []
                 }
+                # Collect methods (functions defined within the class)
                 for child in node.body:
                     if isinstance(child, ast.FunctionDef):
                         class_info['methods'].append({
@@ -49,7 +57,8 @@ def extract_code_structure(file_path: str) -> dict:
                 structure['classes'].append(class_info)
         
         return structure
-    except:
+    except Exception as e:
+        console.print(f"[yellow]Warning: Could not parse {file_path}: {str(e)}[/yellow]")
         return {'functions': [], 'classes': []}
 
 def create_structure_tree(metrics):
