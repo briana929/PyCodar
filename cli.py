@@ -9,8 +9,59 @@ from rich.panel import Panel
 from rich.text import Text
 from rich import box
 import ast
+import fnmatch
+import os
 
 console = Console()
+
+def parse_ignore_file(file_path: Path) -> list:
+    """Parse an ignore file and return list of patterns."""
+    if not file_path.exists():
+        return []
+    
+    patterns = []
+    with open(file_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith('#'):
+                patterns.append(line)
+    return patterns
+
+def should_ignore(path: Path, ignore_patterns: list) -> bool:
+    """Check if a path should be ignored based on patterns."""
+    try:
+        # Convert path to string relative to current directory
+        rel_path = str(path.relative_to(Path.cwd()))
+    except ValueError:
+        # If path is in current directory, use just the filename
+        rel_path = path.name
+    
+    for pattern in ignore_patterns:
+        # Handle directory patterns (ending with /)
+        if pattern.endswith('/'):
+            if fnmatch.fnmatch(rel_path, pattern[:-1]) or \
+               fnmatch.fnmatch(rel_path, pattern + '*'):
+                return True
+        # Handle regular patterns
+        elif fnmatch.fnmatch(rel_path, pattern):
+            return True
+    return False
+
+def get_ignore_patterns(base_path: Path) -> list:
+    """Get combined ignore patterns from .gitignore and .codarignore."""
+    codarignore_path = base_path / '.codarignore'
+    gitignore_path = base_path / '.gitignore'
+    
+    # Get patterns from .codarignore
+    codar_patterns = parse_ignore_file(codarignore_path)
+    
+    # If .gitignore is not ignored by .codarignore, get its patterns
+    gitignore_patterns = []
+    if not should_ignore(gitignore_path, codar_patterns):
+        gitignore_patterns = parse_ignore_file(gitignore_path)
+    
+    # Combine patterns, with .codarignore taking priority
+    return codar_patterns + gitignore_patterns
 
 def format_size(size_kb):
     """Format size in KB to a human-readable format."""
@@ -122,26 +173,37 @@ def main():
     args = parser.parse_args()
     
     if args.command == 'stats':
-        path = Path(args.path)
-        if not path.exists():
-            console.print(f"[red]Error: Path '{path}' does not exist[/red]", file=sys.stderr)
+        base_path = Path(args.path)
+        if not base_path.exists():
+            console.print(f"[red]Error: Path '{base_path}' does not exist[/red]", file=sys.stderr)
             sys.exit(1)
-            
+        
+        # Get ignore patterns
+        ignore_patterns = get_ignore_patterns(base_path)
+        
         # Enhance the metrics with code analysis
-        metrics = analyze_directory(str(path))
+        metrics = analyze_directory(str(base_path))
         
         # Add code metrics
         total_code_lines = 0
         total_comment_lines = 0
         total_empty_lines = 0
-        total_directories = len([d for d in metrics['file_structure'] if d['path']])
+        total_directories = 0
+        filtered_file_structure = []
         
         for folder in metrics['file_structure']:
+            folder_path = Path(folder['path']) if folder['path'] else Path('.')
+            if should_ignore(folder_path, ignore_patterns):
+                continue
+                
+            filtered_files = []
             for file in folder['files']:
+                file_path = folder_path / file['name']
+                if should_ignore(file_path, ignore_patterns):
+                    continue
+                    
                 if file['name'].endswith('.py'):
-                    code_lines, comment_lines, empty_lines = count_code_metrics(
-                        str(Path(folder['path']) / file['name']) if folder['path'] else file['name']
-                    )
+                    code_lines, comment_lines, empty_lines = count_code_metrics(str(file_path))
                     file['code_lines'] = code_lines
                     file['comment_lines'] = comment_lines
                     file['empty_lines'] = empty_lines
@@ -152,11 +214,20 @@ def main():
                     file['code_lines'] = 0
                     file['comment_lines'] = 0
                     file['empty_lines'] = 0
+                
+                filtered_files.append(file)
+            
+            if filtered_files:
+                folder['files'] = filtered_files
+                filtered_file_structure.append(folder)
+                total_directories += 1
         
+        metrics['file_structure'] = filtered_file_structure
         metrics['total_code_lines'] = total_code_lines
         metrics['total_comment_lines'] = total_comment_lines
         metrics['total_empty_lines'] = total_empty_lines
         metrics['total_directories'] = total_directories
+        metrics['total_files'] = sum(len(folder['files']) for folder in filtered_file_structure)
         
         print_stats(metrics)
     else:

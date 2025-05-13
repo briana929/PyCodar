@@ -1,5 +1,5 @@
 # Codar: Code Architecture System
-A Git-like tool for auditing and understanding your codebase i.e. a radar for your code.
+A command-line tool for auditing and understanding your codebase i.e. a radar for your code.
 
 ## Features
 
@@ -13,7 +13,7 @@ Codar offers a couple of very useful terminal commands to help you analyze your 
 | `codar dead`  | Identify dead code, duplicated logic, or overly complex parts.                                                  |
 
 Additionally, Codar ...
-+ ingores files and directories specified in `.gitignore` and `.codarignore` (where you can also ignore gitignore)
++ ingores files and directories specified in `.gitignore` and `.codarignore` (where you can optionally ignore gitignore)
 
 
 ## Install
