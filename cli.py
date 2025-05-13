@@ -55,13 +55,14 @@ def get_ignore_patterns(base_path: Path) -> list:
     # Get patterns from .codarignore
     codar_patterns = parse_ignore_file(codarignore_path)
     
-    # If .gitignore is not ignored by .codarignore, get its patterns
-    gitignore_patterns = []
-    if not should_ignore(gitignore_path, codar_patterns):
-        gitignore_patterns = parse_ignore_file(gitignore_path)
+    # Get patterns from .gitignore
+    gitignore_patterns = parse_ignore_file(gitignore_path)
+    
+    # Always ignore the ignore files themselves
+    always_ignore = ['.gitignore', '.codarignore']
     
     # Combine patterns, with .codarignore taking priority
-    return codar_patterns + gitignore_patterns
+    return always_ignore + codar_patterns + gitignore_patterns
 
 def format_size(size_kb):
     """Format size in KB to a human-readable format."""
