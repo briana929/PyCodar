@@ -1,5 +1,5 @@
-# Codar: Code Architecture System
-A simple tool for auditing and understanding your codebase i.e. a radar for your code.
+# Codar: A Radar for Your Code
+**A simple tool for auditing and understanding your codebase.**
 
 Get started with:
 ```bash

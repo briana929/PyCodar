@@ -5,13 +5,10 @@ import sys
 from pathlib import Path
 from rich.console import Console
 from rich.table import Table
-from rich.panel import Panel
 from rich.tree import Tree
-from rich.text import Text
 from rich import box
 import ast
 import fnmatch
-import os
 
 console = Console()
 
