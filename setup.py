@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="codar",
+    name="pycodar",
     version="0.1.0",
     packages=find_packages(),
     install_requires=[
@@ -11,7 +11,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'codar=codar.cli:main',
+            'pycodar=codar.cli:main',
         ],
     },
     author="Quentin Wach",
@@ -19,10 +19,10 @@ setup(
     description="Code Architecture System - A simple tool for auditing and understanding your codebase",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
-    url="https://github.com/QuentinWach/codar",
+    url="https://github.com/QuentinWach/pycodar",
     project_urls={
-        "Bug Tracker": "https://github.com/QuentinWach/codar/issues",
-        "Documentation": "https://github.com/QuentinWach/codar#readme",
+        "Bug Tracker": "https://github.com/QuentinWach/pycodar/issues",
+        "Documentation": "https://github.com/QuentinWach/pycodar#readme",
     },
     classifiers=[
         "Development Status :: 4 - Beta",
@@ -41,4 +41,6 @@ setup(
     ],
     python_requires=">=3.6",
     keywords="code-analysis, architecture, metrics, codebase, development-tools",
+    zip_safe=False,  # Ensure the package is installed as a directory, not a zip file
+    include_package_data=True,  # Include any non-Python files in the package
 ) 

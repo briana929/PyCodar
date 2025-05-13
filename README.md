@@ -1,4 +1,4 @@
-# Codar: A Radar for Your Code
+# PyCodar: A Radar for Your Code
 **A simple tool for auditing and understanding your codebase.**
 
 ## Requirements
@@ -8,76 +8,30 @@
 ## Installation
 
 ### Quick Install
-The easiest way to install Codar is using pip:
+The easiest way to install PyCodar is using pip:
 ```bash
-pip install git+https://github.com/QuentinWach/codar.git
+pip install pycodar
 ```
 
-After installation, you should be able to use the `codar` command from anywhere in your terminal.
+After installation, you should be able to use the `pycodar` command from anywhere in your terminal.
 
 ### Development Install
-If you want to contribute to Codar or run it from source:
+If you want to contribute to PyCodar or run it from source:
 ```bash
 # Clone the repository
-git clone https://github.com/QuentinWach/codar.git
-cd codar
+git clone https://github.com/QuentinWach/pycodar.git
+cd pycodar
 
 # Install in development mode
 pip install -e .
 ```
 
 ## Usage
-After installation, you can use Codar from the command line:
+After installation, you can use PyCodar from the command line:
 ```bash
-codar stats [directory]
+pycodar stats [directory]
 ```
 
-Below, you can see the result for Codar when we use `codar stats`. Note that Codar ingores files and directories specified in `.gitignore` and `.codarignore` (where you can optionally ignore gitignore).
+Below, you can see the result for PyCodar when we use `pycodar stats`. Note that PyCodar ingores files and directories specified in `.gitignore` and `.codarignore` (where you can optionally ignore gitignore).
 
-```bash
-📊 Basic Metrics
-╭─────────────────────┬───────────╮
-│  Total Size         │  21.30KB  │
-│  Total Files        │  4        │
-│  Total Directories  │  1        │
-│  Total Lines        │  600      │
-│  Code Lines         │  408      │
-│  Comment Lines      │  15       │
-│  Empty Lines        │  85       │
-│  Functions          │  16       │
-│  Classes            │  0        │
-╰─────────────────────┴───────────╯
-
-🌳 File Structure
-📁 Root
-├── 📄 README.md
-├── 📄 analyze.py
-│   ├── 🔸 count_functions_and_classes
-│   ├── 🔸 get_file_size_kb
-│   ├── 🔸 count_lines
-│   ├── 🔸 analyze_directory
-│   └── 🔸 generate_report
-├── 📄 cli.py
-│   ├── 🔸 extract_code_structure
-│   ├── 🔸 create_structure_tree
-│   ├── 🔸 parse_ignore_file
-│   ├── 🔸 should_ignore
-│   ├── 🔸 get_ignore_patterns
-│   ├── 🔸 format_size
-│   ├── 🔸 count_code_metrics
-│   ├── 🔸 create_metrics_table
-│   ├── 🔸 create_file_table
-│   ├── 🔸 print_stats
-│   └── 🔸 main
-└── 📄 setup.py
-
-📁 File Distribution
-╭────────┬──────────────┬────────┬────────────┬─────────┬─────────┬───────────╮
-│  Path  │  File        │  Code  │  Comments  │  Empty  │  Total  │     Size  │
-├────────┼──────────────┼────────┼────────────┼─────────┼─────────┼───────────┤
-│  Root  │  README.md   │     0  │         0  │      0  │     27  │   1.25KB  │
-│  Root  │  setup.py    │    26  │         0  │      1  │     27  │   0.78KB  │
-│  Root  │  cli.py      │   264  │        10  │     58  │    332  │  12.25KB  │
-│  Root  │  analyze.py  │   118  │         5  │     26  │    149  │   4.94KB  │
-╰────────┴──────────────┴────────┴────────────┴─────────┴─────────┴───────────╯
 ```

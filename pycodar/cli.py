@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import argparse
-from codar.analyze import analyze_directory
+from pycodar.analyze import analyze_directory
 import sys
 from pathlib import Path
 from rich.console import Console
