@@ -166,7 +166,3 @@ and if you just want to see everything all at once, type:
 ```bash
 pycodar all
 ```
-
-### License
-MIT
-
