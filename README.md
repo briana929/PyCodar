@@ -66,3 +66,8 @@ in your terminal to get statistics of your directory printed out like:
 │  pycodar  │  analyze.py      │   117  │         5  │     26  │    148  │   4.91KB  │
 ╰───────────┴──────────────────┴────────┴────────────┴─────────┴─────────┴───────────╯
 ```
+`pycodar stats`: Summarizes the most basic stats of your directory in a table.
+`pycodar strct`: Displays the file structure of all the files, their functions, classes, and methods in a nicely colored tree.
+`pycodar files`: Shows a table of all the files with counts of the lines of code, comments, empty lines, total lines, and file size.
+`pycodar calls`: Counts how often elements (modules, functions, methods) of your code are called within the code.
+`pycodar dead`: Finds (likely) unused code.
