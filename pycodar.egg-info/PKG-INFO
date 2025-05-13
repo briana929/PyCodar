@@ -1,7 +1,7 @@
-Metadata-Version: 2.4
+Metadata-Version: 2.1
 Name: pycodar
-Version: 0.1.0
-Summary: Code Architecture System - A simple tool for auditing and understanding your codebase
+Version: 0.1.1
+Summary: A simple tool for auditing and understanding your codebase
 Home-page: https://github.com/QuentinWach/pycodar
 Author: Quentin Wach
 Author-email: quentin.wach@gmail.com
@@ -26,17 +26,6 @@ Description-Content-Type: text/markdown
 Requires-Dist: rich>=10.0.0
 Requires-Dist: typer>=0.9.0
 Requires-Dist: pathspec>=0.11.0
-Dynamic: author
-Dynamic: author-email
-Dynamic: classifier
-Dynamic: description
-Dynamic: description-content-type
-Dynamic: home-page
-Dynamic: keywords
-Dynamic: project-url
-Dynamic: requires-dist
-Dynamic: requires-python
-Dynamic: summary
 
 # PyCodar: A Radar for Your Code
 **A simple tool for auditing and understanding your codebase.**

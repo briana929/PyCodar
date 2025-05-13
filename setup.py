@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="pycodar",
-    version="0.1.0",
+    version="0.1.2",
     packages=find_packages(),
     install_requires=[
         "rich>=10.0.0",
@@ -11,12 +11,12 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'pycodar=codar.cli:main',
+            'pycodar=pycodar.cli:main',
         ],
     },
     author="Quentin Wach",
     author_email="quentin.wach@gmail.com",
-    description="Code Architecture System - A simple tool for auditing and understanding your codebase",
+    description="A simple tool for auditing and understanding your codebase",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/QuentinWach/pycodar",

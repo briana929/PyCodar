@@ -1,2 +1,2 @@
 [console_scripts]
-pycodar = codar.cli:main
+pycodar = pycodar.cli:main
