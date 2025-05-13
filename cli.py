@@ -6,6 +6,7 @@ from pathlib import Path
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
+from rich.tree import Tree
 from rich.text import Text
 from rich import box
 import ast
@@ -13,6 +14,81 @@ import fnmatch
 import os
 
 console = Console()
+
+def extract_code_structure(file_path: str) -> dict:
+    """Extract functions, classes, and methods from a Python file."""
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            content = file.read()
+        
+        tree = ast.parse(content)
+        structure = {
+            'functions': [],
+            'classes': []
+        }
+        
+        for node in ast.walk(tree):
+            if isinstance(node, ast.FunctionDef):
+                if not isinstance(node.parent, ast.ClassDef):  # Only top-level functions
+                    structure['functions'].append({
+                        'name': node.name,
+                        'lineno': node.lineno
+                    })
+            elif isinstance(node, ast.ClassDef):
+                class_info = {
+                    'name': node.name,
+                    'lineno': node.lineno,
+                    'methods': []
+                }
+                for child in node.body:
+                    if isinstance(child, ast.FunctionDef):
+                        class_info['methods'].append({
+                            'name': child.name,
+                            'lineno': child.lineno
+                        })
+                structure['classes'].append(class_info)
+        
+        return structure
+    except:
+        return {'functions': [], 'classes': []}
+
+def create_structure_tree(metrics):
+    """Create a rich tree showing file structure with code elements."""
+    tree = Tree("📁 Project Structure", style="bold blue")
+    
+    # Sort folders and files for consistent display
+    sorted_folders = sorted(metrics['file_structure'], key=lambda x: x['path'] or '')
+    
+    for folder in sorted_folders:
+        path = folder['path'] or 'Root'
+        folder_tree = tree.add(f"📁 {path}", style="cyan")
+        
+        # Sort files for consistent display
+        sorted_files = sorted(folder['files'], key=lambda x: x['name'])
+        
+        for file in sorted_files:
+            if file['name'].endswith('.py'):
+                # Get code structure for Python files
+                file_path = str(Path(folder['path']) / file['name']) if folder['path'] else file['name']
+                structure = extract_code_structure(file_path)
+                
+                # Create file node with code structure
+                file_node = folder_tree.add(f"📄 {file['name']}", style="yellow")
+                
+                # Add classes
+                for class_info in structure['classes']:
+                    class_node = file_node.add(f"🔷 {class_info['name']}", style="green")
+                    for method in class_info['methods']:
+                        class_node.add(f"🔹 {method['name']}", style="blue")
+                
+                # Add top-level functions
+                for func in structure['functions']:
+                    file_node.add(f"🔸 {func['name']}", style="magenta")
+            else:
+                # Non-Python files
+                folder_tree.add(f"📄 {file['name']}", style="yellow")
+    
+    return tree
 
 def parse_ignore_file(file_path: Path) -> list:
     """Parse an ignore file and return list of patterns."""
@@ -156,6 +232,10 @@ def print_stats(metrics):
     # Basic Metrics
     console.print("\n[bold cyan]📊 Basic Metrics[/bold cyan]")
     console.print(create_metrics_table(metrics))
+    
+    # File Structure
+    console.print("\n[bold cyan]🌳 File Structure[/bold cyan]")
+    console.print(create_structure_tree(metrics))
     
     # File Distribution
     console.print("\n[bold cyan]📁 File Distribution[/bold cyan]")
