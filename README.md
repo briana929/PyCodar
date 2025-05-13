@@ -1,9 +1,35 @@
 # Codar: A Radar for Your Code
 **A simple tool for auditing and understanding your codebase.**
 
-Get started with:
+## Requirements
+- Python 3.6 or higher
+- pip (Python package installer)
+
+## Installation
+
+### Quick Install
+The easiest way to install Codar is using pip:
 ```bash
 pip install git+https://github.com/QuentinWach/codar.git
+```
+
+After installation, you should be able to use the `codar` command from anywhere in your terminal.
+
+### Development Install
+If you want to contribute to Codar or run it from source:
+```bash
+# Clone the repository
+git clone https://github.com/QuentinWach/codar.git
+cd codar
+
+# Install in development mode
+pip install -e .
+```
+
+## Usage
+After installation, you can use Codar from the command line:
+```bash
+codar stats [directory]
 ```
 
 Below, you can see the result for Codar when we use `codar stats`. Note that Codar ingores files and directories specified in `.gitignore` and `.codarignore` (where you can optionally ignore gitignore).
