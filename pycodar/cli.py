@@ -376,6 +376,23 @@ def print_dead_code(metrics):
     else:
         console.print("\n[bold red]Error: Dead code analysis not available[/bold red]")
 
+def print_all(metrics):
+    """Print all information from all commands."""
+    print_stats(metrics)
+    console.print("\n")
+    
+    print_structure(metrics)
+    console.print("\n")
+    
+    print_files(metrics)
+    console.print("\n")
+    
+    print_calls(metrics)
+    console.print("\n")
+    
+    print_dead_code(metrics)
+    console.print("\n")
+
 def print_help():
     """Print help information about PyCodar commands."""
     console.print("\n[bold cyan]PyCodar: A Radar for Your Code[/bold cyan]")
@@ -392,6 +409,7 @@ def print_help():
     table.add_row("pycodar files", "Shows a table of all the files with counts of the lines of code, comments, empty lines, total lines, and file size. 📋")
     table.add_row("pycodar calls", "Counts how often elements (modules, functions, methods) of your code are called within the code. 📞")
     table.add_row("pycodar dead", "Finds (likely) unused code. ☠️")
+    table.add_row("pycodar all", "Shows all information from all commands in sequence. 🔍")
     table.add_row("pycodar help", "Shows this help information. ℹ️")
     
     console.print(table)
@@ -484,6 +502,10 @@ def main():
     dead_parser = subparsers.add_parser('dead', help='Find potentially unused code')
     dead_parser.add_argument('--path', default='.', help=path_help)
     
+    # All command - Shows all information
+    all_parser = subparsers.add_parser('all', help='Show all information from all commands')
+    all_parser.add_argument('--path', default='.', help=path_help)
+    
     # Help command - Shows help information
     help_parser = subparsers.add_parser('help', help='Show help information about PyCodar commands')
     
@@ -491,7 +513,7 @@ def main():
     
     if args.command == 'help':
         print_help()
-    elif args.command in ('stats', 'strct', 'files', 'calls', 'dead'):
+    elif args.command in ('stats', 'strct', 'files', 'calls', 'dead', 'all'):
         # Process directory and get metrics
         metrics = process_directory(args)
         
@@ -511,6 +533,8 @@ def main():
         elif args.command == 'dead':
             print_dead_code(metrics)
             console.print("\n")
+        elif args.command == 'all':
+            print_all(metrics)
     else:
         # If no command is provided, show help
         print_help()
