@@ -9,6 +9,7 @@ from rich.tree import Tree
 from rich import box
 import ast
 import fnmatch
+from collections import defaultdict
 
 console = Console()
 
@@ -212,6 +213,98 @@ def create_metrics_table(metrics):
     
     return table
 
+def create_code_connections_table(code_connections):
+    """Create a table showing most called functions and methods."""
+    table = Table(box=box.ROUNDED, show_header=True, padding=(0, 2))
+    table.add_column("Type", style="cyan")
+    table.add_column("Name", style="yellow")
+    table.add_column("Called", style="green", justify="right")
+    
+    # Add function calls (top 10)
+    function_calls = sorted(
+        [(name, count) for name, count in code_connections['calls']['functions'].items()],
+        key=lambda x: x[1], reverse=True
+    )[:10]
+    
+    for name, count in function_calls:
+        table.add_row("Function", name, str(count))
+    
+    # Add method calls (top 10)
+    method_calls = []
+    for cls, methods in code_connections['calls']['methods'].items():
+        for method, count in methods.items():
+            method_calls.append((f"{cls}.{method}", count))
+    
+    method_calls = sorted(method_calls, key=lambda x: x[1], reverse=True)[:10]
+    
+    for name, count in method_calls:
+        table.add_row("Method", name, str(count))
+    
+    return table
+
+def create_dead_code_table(code_connections):
+    """Create a table showing potentially dead code."""
+    table = Table(box=box.ROUNDED, show_header=True, padding=(0, 2))
+    table.add_column("Type", style="cyan")
+    table.add_column("Name", style="yellow")
+    
+    # Add potentially dead functions
+    for func in sorted(code_connections['dead_code']['functions']):
+        if not func.startswith('_'):  # Skip private functions
+            table.add_row("Function", func)
+    
+    # Add potentially dead classes
+    for cls in sorted(code_connections['dead_code']['classes']):
+        if not cls.startswith('_'):  # Skip private classes
+            table.add_row("Class", cls)
+    
+    # Add potentially dead methods
+    for cls, methods in code_connections['dead_code']['methods'].items():
+        for method in sorted(methods):
+            if not method.startswith('_'):  # Skip private methods
+                table.add_row("Method", f"{cls}.{method}")
+    
+    return table
+
+def create_code_connections_tree(code_connections):
+    """Create a tree showing code connections and imports."""
+    # Start with root node
+    tree = Tree("🔄 Code Connections", style="bold blue")
+    
+    # Add imports section
+    imports_node = tree.add("📥 Most Imported Modules", style="cyan")
+    import_counts = sorted(
+        [(module, count) for module, count in code_connections['calls']['imports'].items()],
+        key=lambda x: x[1], reverse=True
+    )[:10]
+    
+    for module, count in import_counts:
+        imports_node.add(f"{module} ({count} imports)", style="yellow")
+    
+    # Add functions section - most called
+    functions_node = tree.add("🔸 Most Called Functions", style="magenta")
+    function_calls = sorted(
+        [(name, count) for name, count in code_connections['calls']['functions'].items()],
+        key=lambda x: x[1], reverse=True
+    )[:10]
+    
+    for name, count in function_calls:
+        functions_node.add(f"{name} ({count} calls)", style="green")
+    
+    # Add methods section - most called
+    methods_node = tree.add("🔹 Most Called Methods", style="blue")
+    method_calls = []
+    for cls, methods in code_connections['calls']['methods'].items():
+        for method, count in methods.items():
+            method_calls.append((f"{cls}.{method}", count))
+    
+    method_calls = sorted(method_calls, key=lambda x: x[1], reverse=True)[:10]
+    
+    for name, count in method_calls:
+        methods_node.add(f"{name} ({count} calls)", style="green")
+    
+    return tree
+
 def create_file_table(metrics):
     """Create a rich table for file distribution."""
     table = Table(box=box.ROUNDED, show_header=True, padding=(0, 2))
@@ -252,6 +345,25 @@ def print_stats(metrics):
     # File Distribution
     console.print("\n[bold cyan]📁 File Distribution[/bold cyan]")
     console.print(create_file_table(metrics))
+    
+    # Code Connections
+    if 'code_connections' in metrics:
+        console.print("\n[bold cyan]🔗 Code Connections[/bold cyan]")
+        console.print(create_code_connections_tree(metrics['code_connections']))
+        
+        console.print("\n[bold cyan]📊 Most Called Elements[/bold cyan]")
+        console.print(create_code_connections_table(metrics['code_connections']))
+        
+        # Only show dead code if there is any
+        dead_code_count = (
+            len(metrics['code_connections']['dead_code']['functions']) +
+            len(metrics['code_connections']['dead_code']['classes']) +
+            sum(len(methods) for methods in metrics['code_connections']['dead_code']['methods'].values())
+        )
+        
+        if dead_code_count > 0:
+            console.print("\n[bold red]💀 Potentially Unused Code[/bold red]")
+            console.print(create_dead_code_table(metrics['code_connections']))
     
     console.print("\n")
 
