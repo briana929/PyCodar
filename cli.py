@@ -3,6 +3,13 @@ import argparse
 from analyze import analyze_directory
 import sys
 from pathlib import Path
+from rich.console import Console
+from rich.table import Table
+from rich.panel import Panel
+from rich.text import Text
+from rich import box
+
+console = Console()
 
 def format_size(size_kb):
     """Format size in KB to a human-readable format."""
@@ -13,28 +20,59 @@ def format_size(size_kb):
     else:
         return f"{size_kb/(1024*1024):.2f}GB"
 
-def print_stats(metrics):
-    """Print formatted statistics from the analysis."""
-    print("\n=== Code Statistics ===\n")
+def create_metrics_table(metrics):
+    """Create a rich table for basic metrics."""
+    table = Table(box=box.ROUNDED, show_header=False, padding=(0, 2))
+    table.add_column("Metric", style="cyan")
+    table.add_column("Value", style="green")
     
-    # Basic Metrics
-    print("📊 Basic Metrics:")
-    print(f"Total Size: {format_size(metrics['total_size_kb'])}")
-    print(f"Total Files: {metrics['total_files']}")
-    print(f"Total Lines: {metrics['total_lines']:,}")
+    table.add_row("Total Size", format_size(metrics['total_size_kb']))
+    table.add_row("Total Files", str(metrics['total_files']))
+    table.add_row("Total Lines", f"{metrics['total_lines']:,}")
+    table.add_row("Functions", f"{metrics['total_functions']:,}")
+    table.add_row("Classes", f"{metrics['total_classes']:,}")
     
-    # Code Structure
-    print("\n🏗️  Code Structure:")
-    print(f"Functions: {metrics['total_functions']:,}")
-    print(f"Classes: {metrics['total_classes']:,}")
+    return table
+
+def create_file_table(metrics):
+    """Create a rich table for file distribution."""
+    table = Table(box=box.ROUNDED, show_header=True, padding=(0, 2))
+    table.add_column("Path", style="cyan")
+    table.add_column("File", style="yellow")
+    table.add_column("Lines", style="green", justify="right")
+    table.add_column("Size", style="blue", justify="right")
     
-    # File Distribution
-    print("\n📁 File Distribution:")
     for folder in metrics['file_structure']:
         path = folder['path'] or 'Root'
-        print(f"\n{path}:")
         for file in folder['files']:
-            print(f"  {file['name']} ({file['lines']:,} lines, {format_size(file['size_kb'])})")
+            table.add_row(
+                path,
+                file['name'],
+                f"{file['lines']:,}",
+                format_size(file['size_kb'])
+            )
+    
+    return table
+
+def print_stats(metrics):
+    """Print formatted statistics from the analysis."""
+    console.print("\n")
+    
+    # Title
+    console.print(Panel.fit(
+        "[bold blue]Code Statistics[/bold blue]",
+        border_style="blue"
+    ))
+    
+    # Basic Metrics
+    console.print("\n[bold cyan]📊 Basic Metrics[/bold cyan]")
+    console.print(create_metrics_table(metrics))
+    
+    # File Distribution
+    console.print("\n[bold cyan]📁 File Distribution[/bold cyan]")
+    console.print(create_file_table(metrics))
+    
+    console.print("\n")
 
 def main():
     parser = argparse.ArgumentParser(description='Code Architecture System - Code Analysis Tool')
@@ -49,7 +87,7 @@ def main():
     if args.command == 'stats':
         path = Path(args.path)
         if not path.exists():
-            print(f"Error: Path '{path}' does not exist", file=sys.stderr)
+            console.print(f"[red]Error: Path '{path}' does not exist[/red]", file=sys.stderr)
             sys.exit(1)
             
         metrics = analyze_directory(str(path))
