@@ -162,9 +162,9 @@ If you need any help / a quick reminder, type:
 ```bash
 pycodar help
 ```
-or
+and if you just want to see everything all at once, type:
 ```bash
-pycodar -help
+pycodar all
 ```
 
 ### License
