@@ -1,7 +1,7 @@
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Last Commit](https://img.shields.io/github/last-commit/QuentinWach/pycodar)
 ![PyPI](https://img.shields.io/pypi/v/pycodar)
-![Downloads](https://img.shields.io/pypi/dm/pycodar)
+[![PyPI Downloads](https://static.pepy.tech/badge/pycodar)](https://pepy.tech/projects/pycodar)
 
 # PyCodar: A Radar for Your Code
 **A simple tool for auditing and understanding your (python) codebase.**
